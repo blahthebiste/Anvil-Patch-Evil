@@ -19,7 +19,7 @@ public class AnvilFix
 {
     public static final String MODID = "anvilfix";
     public static final String NAME = "AnvilFix - Lawful";
-    public static final String VERSION = "0.1";
+    public static final String VERSION = "0.1.1";
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void anvilUpdate(AnvilUpdateEvent event) {
