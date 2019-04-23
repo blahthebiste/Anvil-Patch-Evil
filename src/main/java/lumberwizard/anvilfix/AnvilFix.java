@@ -119,29 +119,29 @@ public class AnvilFix
                         }
 
                         outputItemEnchantments.put(enchantmentToAdd, Integer.valueOf(enchantmentNewLevel));
-                        int repairCostAddedbyEnchantmentRarity = 0;
+                        int repairCostAddedByEnchantmentRarity = 0;
 
                         switch (enchantmentToAdd.getRarity())
                         {
                             case COMMON:
-                                repairCostAddedbyEnchantmentRarity = 1;
+                                repairCostAddedByEnchantmentRarity = 1;
                                 break;
                             case UNCOMMON:
-                                repairCostAddedbyEnchantmentRarity = 2;
+                                repairCostAddedByEnchantmentRarity = 2;
                                 break;
                             case RARE:
-                                repairCostAddedbyEnchantmentRarity = 4;
+                                repairCostAddedByEnchantmentRarity = 4;
                                 break;
                             case VERY_RARE:
-                                repairCostAddedbyEnchantmentRarity = 8;
+                                repairCostAddedByEnchantmentRarity = 8;
                         }
 
                         if (isRightItemEnchantedBook)
                         {
-                            repairCostAddedbyEnchantmentRarity = Math.max(1, repairCostAddedbyEnchantmentRarity / 2);
+                            repairCostAddedByEnchantmentRarity = Math.max(1, repairCostAddedByEnchantmentRarity / 2);
                         }
 
-                        addedRepairCost += repairCostAddedbyEnchantmentRarity * enchantmentNewLevel;
+                        addedRepairCost += repairCostAddedByEnchantmentRarity * enchantmentNewLevel;
 
                         if (left.getCount() > 1)
                         {
