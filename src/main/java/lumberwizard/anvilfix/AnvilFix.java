@@ -178,8 +178,6 @@ public class AnvilFix
             }
             if (isRightItemEnchantedBook && !outputItem.getItem().isBookEnchantable(outputItem, right)) outputItem = ItemStack.EMPTY;
 
-            event.setCost(addedRepairCost);
-
             if (addedRepairCost <= 0)
             {
                 outputItem = ItemStack.EMPTY;
@@ -187,6 +185,7 @@ public class AnvilFix
 
             if (!outputItem.isEmpty()) {
                 EnchantmentHelper.setEnchantments(outputItemEnchantments, outputItem);
+                event.setCost(addedRepairCost);
                 event.setOutput(outputItem);
             }
         }
