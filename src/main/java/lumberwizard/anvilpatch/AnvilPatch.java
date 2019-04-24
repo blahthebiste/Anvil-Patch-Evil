@@ -1,5 +1,6 @@
 package lumberwizard.anvilpatch;
 
+import lumberwizard.anvilpatch.common.CommonProxy;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.init.Items;
@@ -27,7 +28,7 @@ public class AnvilPatch
     public static final String NAME = "Anvil Patch - Lawful";
     public static final String VERSION = "0.2";
 
-    @SidedProxy(clientSide = "lumberwizard.anvilpatch.client.ClientProxy", serverSide = "lumberwizard.anvilpatch.CommonProxy")
+    @SidedProxy(clientSide = "lumberwizard.anvilpatch.client.ClientProxy", serverSide = "lumberwizard.anvilpatch.common.CommonProxy")
     public static CommonProxy proxy;
 
     @Mod.Instance

@@ -1,7 +1,7 @@
 package lumberwizard.anvilpatch.client;
 
-import lumberwizard.anvilpatch.AnvilFixException;
-import lumberwizard.anvilpatch.CommonProxy;
+import lumberwizard.anvilpatch.common.AnvilFixException;
+import lumberwizard.anvilpatch.common.CommonProxy;
 
 public class ClientProxy extends CommonProxy {
 

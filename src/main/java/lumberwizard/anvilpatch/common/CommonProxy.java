@@ -1,4 +1,6 @@
-package lumberwizard.anvilpatch;
+package lumberwizard.anvilpatch.common;
+
+import lumberwizard.anvilpatch.common.AnvilFixException;
 
 public class CommonProxy {
 

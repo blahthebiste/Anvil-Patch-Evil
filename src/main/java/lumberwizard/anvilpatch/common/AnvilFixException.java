@@ -1,4 +1,4 @@
-package lumberwizard.anvilpatch;
+package lumberwizard.anvilpatch.common;
 
 import net.minecraftforge.fml.common.LoaderException;
 
