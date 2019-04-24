@@ -191,7 +191,9 @@ public class AnvilEventHandler {
 
             if (ModConfig.getLevelCap() >= 0 && totalRepairCost >= ModConfig.getLevelCap())
             {
-                event.setCanceled(true);
+                if (event.getOutput().isEmpty()) {
+                    event.setCanceled(true);
+                }
                 return;
             }
 
