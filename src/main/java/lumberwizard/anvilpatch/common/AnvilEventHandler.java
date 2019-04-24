@@ -8,6 +8,7 @@ import net.minecraft.init.Items;
 import net.minecraft.item.ItemEnchantedBook;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.event.AnvilUpdateEvent;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -20,7 +21,8 @@ public class AnvilEventHandler {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void anvilUpdate(AnvilUpdateEvent event) {
-        if (!event.getOutput().isEmpty()) return;
+        //if (!event.getOutput().isEmpty()) return;
+        AnvilPatch.logger.info("Anvil event fired for side " + FMLCommonHandler.instance().getEffectiveSide());
         ItemStack left = event.getLeft();
         ItemStack right = event.getRight();
         ItemStack outputItem = left.copy();
@@ -28,6 +30,9 @@ public class AnvilEventHandler {
         Map<Enchantment, Integer> outputItemEnchantments = EnchantmentHelper.getEnchantments(outputItem);
 
         boolean isRightItemEnchantedBook = right.getItem() == Items.ENCHANTED_BOOK && !ItemEnchantedBook.getEnchantments(right).isEmpty();
+
+        boolean shouldIncreaseCost = ModConfig.getCostIncreaseSetting() == ModConfig.EnumCostIncreaseSetting.KEEP;
+        boolean shouldApplyIncreasedCost = ModConfig.getCostIncreaseSetting() != ModConfig.EnumCostIncreaseSetting.REMOVE;
 
         int materialCost = 1;
         if (outputItem.isItemStackDamageable() && outputItem.getItem().getIsRepairable(left, right))
@@ -49,22 +54,18 @@ public class AnvilEventHandler {
             }
 
         }
-        else
-        {
-            if (!isRightItemEnchantedBook && (outputItem.getItem() != right.getItem() || !outputItem.isItemStackDamageable()))
-            {
+        else {
+            if (!isRightItemEnchantedBook && (outputItem.getItem() != right.getItem() || !outputItem.isItemStackDamageable())) {
                 return;
             }
 
-            if (outputItem.isItemStackDamageable() && !isRightItemEnchantedBook)
-            {
+            if (outputItem.isItemStackDamageable() && !isRightItemEnchantedBook) {
                 int leftDurability = left.getMaxDamage() - left.getItemDamage();
                 int rightDurability = right.getMaxDamage() - right.getItemDamage();
                 int newDurability = leftDurability + rightDurability + outputItem.getMaxDamage() * 12 / 100;
                 int newDamage = outputItem.getMaxDamage() - newDurability;
 
-                if (newDamage < 0)
-                {
+                if (newDamage < 0) {
                     newDamage = 0;
                 }
 
@@ -79,10 +80,8 @@ public class AnvilEventHandler {
             boolean rightItemHasCompatibleEnchantments = false;
             boolean rightItemHasIncompatibleEnchantments = false;
 
-            for (Enchantment enchantmentToAdd : enchantmentsToApply.keySet())
-            {
-                if (enchantmentToAdd != null)
-                {
+            for (Enchantment enchantmentToAdd : enchantmentsToApply.keySet()) {
+                if (enchantmentToAdd != null) {
                     int currentEnchantmentLevel = outputItemEnchantments.containsKey(enchantmentToAdd) ? (outputItemEnchantments.get(enchantmentToAdd)).intValue() : 0;
                     int enchantmentNewLevel = (enchantmentsToApply.get(enchantmentToAdd)).intValue();
                     enchantmentNewLevel = currentEnchantmentLevel == enchantmentNewLevel ? enchantmentNewLevel + 1 : Math.max(enchantmentNewLevel, currentEnchantmentLevel);
@@ -93,33 +92,26 @@ public class AnvilEventHandler {
                         canEnchantmentBeAppliedToLeftItem = true;
                     }
 
-                    for (Enchantment enchantment : outputItemEnchantments.keySet())
-                    {
-                        if (enchantment != enchantmentToAdd && !enchantmentToAdd.isCompatibleWith(enchantment))
-                        {
+                    for (Enchantment enchantment : outputItemEnchantments.keySet()) {
+                        if (enchantment != enchantmentToAdd && !enchantmentToAdd.isCompatibleWith(enchantment)) {
                             canEnchantmentBeAppliedToLeftItem = false;
                             ++addedRepairCost;
                         }
                     }
 
-                    if (!canEnchantmentBeAppliedToLeftItem)
-                    {
+                    if (!canEnchantmentBeAppliedToLeftItem) {
                         rightItemHasIncompatibleEnchantments = true;
-                    }
-                    else
-                    {
+                    } else {
                         rightItemHasCompatibleEnchantments = true;
 
-                        if (enchantmentNewLevel > enchantmentToAdd.getMaxLevel())
-                        {
+                        if (enchantmentNewLevel > enchantmentToAdd.getMaxLevel()) {
                             enchantmentNewLevel = enchantmentToAdd.getMaxLevel();
                         }
 
                         outputItemEnchantments.put(enchantmentToAdd, Integer.valueOf(enchantmentNewLevel));
                         int repairCostAddedByEnchantmentRarity = 0;
 
-                        switch (enchantmentToAdd.getRarity())
-                        {
+                        switch (enchantmentToAdd.getRarity()) {
                             case COMMON:
                                 repairCostAddedByEnchantmentRarity = 1;
                                 break;
@@ -133,28 +125,26 @@ public class AnvilEventHandler {
                                 repairCostAddedByEnchantmentRarity = 8;
                         }
 
-                        if (isRightItemEnchantedBook)
-                        {
+                        if (isRightItemEnchantedBook) {
                             repairCostAddedByEnchantmentRarity = Math.max(1, repairCostAddedByEnchantmentRarity / 2);
                         }
 
                         addedRepairCost += repairCostAddedByEnchantmentRarity * enchantmentNewLevel;
 
-                        if (left.getCount() > 1)
-                        {
+                        if (left.getCount() > 1) {
                             return;
                         }
                     }
                 }
             }
 
-            if (rightItemHasIncompatibleEnchantments && !rightItemHasCompatibleEnchantments)
-            {
+            if (rightItemHasIncompatibleEnchantments && !rightItemHasCompatibleEnchantments) {
                 return;
             }
 
-            boolean shouldIncreaseCost = ModConfig.getCostIncreaseSetting() == ModConfig.EnumCostIncreaseSetting.KEEP || rightItemHasCompatibleEnchantments && ModConfig.getCostIncreaseSetting() != ModConfig.EnumCostIncreaseSetting.REMOVE;
-            boolean shouldApplyIncreasedCost = ModConfig.costIncreaseSetting != ModConfig.EnumCostIncreaseSetting.REMOVE && (rightItemHasCompatibleEnchantments || ModConfig.costIncreaseSetting != ModConfig.EnumCostIncreaseSetting.ENCHANTMENT_ONLY);
+            shouldIncreaseCost = shouldIncreaseCost || rightItemHasCompatibleEnchantments && ModConfig.getCostIncreaseSetting() != ModConfig.EnumCostIncreaseSetting.REMOVE;
+            shouldApplyIncreasedCost = shouldApplyIncreasedCost && (rightItemHasCompatibleEnchantments || ModConfig.getCostIncreaseSetting() != ModConfig.EnumCostIncreaseSetting.ENCHANTMENT_ONLY);
+        }
 
             int renameAddedCost = 0;
 
@@ -213,10 +203,9 @@ public class AnvilEventHandler {
                 if (outputItem.isItemStackDamageable() && outputItem.getItem().getIsRepairable(left, right)) {
                     event.setMaterialCost(materialCost);
                 }
-                event.setCost(addedRepairCost);
+                event.setCost(totalRepairCost);
                 event.setOutput(outputItem);
             }
-        }
     }
 
 }

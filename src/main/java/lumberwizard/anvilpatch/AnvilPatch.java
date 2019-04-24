@@ -13,6 +13,7 @@ import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
+import org.apache.logging.log4j.Logger;
 
 @Mod(modid = AnvilPatch.MODID, name = AnvilPatch.NAME, version = AnvilPatch.VERSION)
 @Mod.EventBusSubscriber(modid= AnvilPatch.MODID)
@@ -20,7 +21,7 @@ public class AnvilPatch
 {
     public static final String MODID = "anvilpatch";
     public static final String NAME = "Anvil Patch - Lawful";
-    public static final String VERSION = "0.2.2";
+    public static final String VERSION = "0.2.3";
 
     @SidedProxy(clientSide = "lumberwizard.anvilpatch.client.ClientProxy", serverSide = "lumberwizard.anvilpatch.common.CommonProxy")
     public static CommonProxy proxy;
@@ -28,12 +29,15 @@ public class AnvilPatch
     @Mod.Instance
     public static AnvilPatch instance;
 
+    public static Logger logger;
+
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event){
         if (Loader.isModLoaded("anvilfix")) {
             proxy.throwAnvilFixException();
         }
         ModNetworkHandler.registerPacketHandlers();
+        logger = event.getModLog();
     }
 
     @SubscribeEvent
