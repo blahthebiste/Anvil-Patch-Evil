@@ -18,7 +18,7 @@ import java.util.Map;
 @Mod.EventBusSubscriber(modid = AnvilPatch.MODID)
 public class AnvilEventHandler {
 
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void anvilUpdate(AnvilUpdateEvent event) {
         ItemStack left = event.getLeft();
         ItemStack right = event.getRight();
@@ -191,7 +191,8 @@ public class AnvilEventHandler {
 
             if (ModConfig.getLevelCap() >= 0 && totalRepairCost >= ModConfig.getLevelCap())
             {
-                outputItem = ItemStack.EMPTY;
+                event.setCanceled(true);
+                return;
             }
 
             if (!outputItem.isEmpty()) {

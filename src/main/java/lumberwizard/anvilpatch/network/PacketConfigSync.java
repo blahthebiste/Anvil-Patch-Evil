@@ -9,7 +9,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 public class PacketConfigSync implements IMessage {
 
-    public PacketConfigSync(){}
+    public PacketConfigSync() {}
 
     private int levelCap;
     private ModConfig.EnumCostIncreaseSetting costIncreaseSetting;
