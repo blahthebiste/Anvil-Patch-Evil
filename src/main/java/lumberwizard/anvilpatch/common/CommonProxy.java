@@ -1,11 +1,11 @@
 package lumberwizard.anvilpatch.common;
 
-import lumberwizard.anvilpatch.common.AnvilFixException;
+import net.minecraftforge.fml.common.LoaderException;
 
 public class CommonProxy {
 
     public void throwAnvilFixException(){
-        throw new AnvilFixException();
+        throw new LoaderException("Anvil Patch - Lawful is incompatible with AnvilFix! Remove one of the mods.");
     }
 
 }
