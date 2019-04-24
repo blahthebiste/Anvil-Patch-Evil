@@ -20,6 +20,7 @@ public class AnvilEventHandler {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void anvilUpdate(AnvilUpdateEvent event) {
+        if (!event.getOutput().isEmpty()) return;
         ItemStack left = event.getLeft();
         ItemStack right = event.getRight();
         ItemStack outputItem = left.copy();
