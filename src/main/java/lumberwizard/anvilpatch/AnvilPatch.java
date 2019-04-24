@@ -26,7 +26,7 @@ public class AnvilPatch
 {
     public static final String MODID = "anvilpatch";
     public static final String NAME = "Anvil Patch - Lawful";
-    public static final String VERSION = "0.2";
+    public static final String VERSION = "0.2.1";
 
     @SidedProxy(clientSide = "lumberwizard.anvilpatch.client.ClientProxy", serverSide = "lumberwizard.anvilpatch.common.CommonProxy")
     public static CommonProxy proxy;
@@ -210,11 +210,11 @@ public class AnvilPatch
                 outputItem = ItemStack.EMPTY;
             }
 
-            if (addedRepairCost == renameAddedCost && ModConfig.levelCap >= 0 && totalRepairCost >= ModConfig.levelCap) {
-                totalRepairCost = ModConfig.levelCap - 1;
+            if (addedRepairCost == renameAddedCost && ModConfig.getLevelCap() >= 0 && totalRepairCost >= ModConfig.getLevelCap()) {
+                totalRepairCost = ModConfig.getLevelCap() - 1;
             }
 
-            if (ModConfig.levelCap >= 0 && totalRepairCost >= ModConfig.levelCap)
+            if (ModConfig.getLevelCap() >= 0 && totalRepairCost >= ModConfig.getLevelCap())
             {
                 outputItem = ItemStack.EMPTY;
             }
