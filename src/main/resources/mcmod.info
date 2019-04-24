@@ -1,7 +1,7 @@
 [
 {
-  "modid": "anvilfix",
-  "name": "Anvil Fix - Lawful",
+  "modid": "anvilpatch",
+  "name": "Anvil Patch - Lawful",
   "description": "This mod removes the level cap from the vanilla anvil, and also the cumulative XP cost for items, in a non-hacky way. It only works for the vanilla anvil.",
   "version": "${version}",
   "mcversion": "${mcversion}",
