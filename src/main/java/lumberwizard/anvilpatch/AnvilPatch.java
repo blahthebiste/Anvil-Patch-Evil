@@ -1,36 +1,57 @@
-package lumberwizard.anvilfix;
+package lumberwizard.anvilpatch;
 
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemEnchantedBook;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.common.config.Config;
+import net.minecraftforge.common.config.ConfigManager;
 import net.minecraftforge.event.AnvilUpdateEvent;
+import net.minecraftforge.fml.client.event.ConfigChangedEvent;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.SidedProxy;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
 
-@Mod(modid = AnvilFix.MODID, name = AnvilFix.NAME, version = AnvilFix.VERSION)
-@Mod.EventBusSubscriber(modid=AnvilFix.MODID)
-public class AnvilFix
+@Mod(modid = AnvilPatch.MODID, name = AnvilPatch.NAME, version = AnvilPatch.VERSION)
+@Mod.EventBusSubscriber(modid= AnvilPatch.MODID)
+public class AnvilPatch
 {
-    public static final String MODID = "anvilfix";
-    public static final String NAME = "AnvilFix - Lawful";
-    public static final String VERSION = "0.1.1";
+    public static final String MODID = "anvilpatch";
+    public static final String NAME = "Anvil Patch - Lawful";
+    public static final String VERSION = "0.2";
 
-    @SubscribeEvent(priority = EventPriority.LOWEST)
+    @SidedProxy(clientSide = "lumberwizard.anvilpatch.client.ClientProxy", serverSide = "lumberwizard.anvilpatch.CommonProxy")
+    public static CommonProxy proxy;
+
+    @Mod.Instance
+    public static AnvilPatch instance;
+
+    @Mod.EventHandler
+    public void preInit(FMLPreInitializationEvent event){
+        if (Loader.isModLoaded("anvilfix")) {
+            proxy.throwAnvilFixException();
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void anvilUpdate(AnvilUpdateEvent event) {
         ItemStack left = event.getLeft();
         ItemStack right = event.getRight();
         ItemStack outputItem = left.copy();
+        boolean shouldIncreaseCost = ModConfig.costIncreaseSetting == ModConfig.EnumCostIncreaseSetting.KEEP;
         int addedRepairCost = 0;
         Map<Enchantment, Integer> outputItemEnchantments = EnchantmentHelper.getEnchantments(outputItem);
 
         boolean isRightItemEnchantedBook = right.getItem() == Items.ENCHANTED_BOOK && !ItemEnchantedBook.getEnchantments(right).isEmpty();
 
+        int materialCost = 1;
         if (outputItem.isItemStackDamageable() && outputItem.getItem().getIsRepairable(left, right))
         {
             int amountRepairedByMat = Math.min(outputItem.getItemDamage(), outputItem.getMaxDamage() / 4);
@@ -40,7 +61,6 @@ public class AnvilFix
                 return;
             }
 
-            int materialCost;
 
             for (materialCost = 0; amountRepairedByMat > 0 && materialCost < right.getCount(); ++materialCost)
             {
@@ -50,7 +70,6 @@ public class AnvilFix
                 amountRepairedByMat = Math.min(outputItem.getItemDamage(), outputItem.getMaxDamage() / 4);
             }
 
-            event.setMaterialCost(materialCost);
         }
         else
         {
@@ -145,7 +164,7 @@ public class AnvilFix
 
                         if (left.getCount() > 1)
                         {
-                            addedRepairCost = 40;
+                            return;
                         }
                     }
                 }
@@ -154,6 +173,10 @@ public class AnvilFix
             if (rightItemHasIncompatibleEnchantments && !rightItemHasCompatibleEnchantments)
             {
                 return;
+            }
+
+            if (rightItemHasCompatibleEnchantments && ModConfig.costIncreaseSetting == ModConfig.EnumCostIncreaseSetting.ENCHANTMENT) {
+                shouldIncreaseCost = true;
             }
 
             int renameAddedCost = 0;
@@ -170,6 +193,7 @@ public class AnvilFix
                 }
             }
 
+
             else if (!repairedItemName.equals(left.getDisplayName()))
             {
                 renameAddedCost = 1;
@@ -178,16 +202,47 @@ public class AnvilFix
             }
             if (isRightItemEnchantedBook && !outputItem.getItem().isBookEnchantable(outputItem, right)) outputItem = ItemStack.EMPTY;
 
-            if (addedRepairCost <= 0)
+            int totalRepairCost = (shouldIncreaseCost ? event.getCost() : 0) + addedRepairCost;
+
+            if (totalRepairCost <= 0)
+            {
+                outputItem = ItemStack.EMPTY;
+            }
+
+            if (addedRepairCost == renameAddedCost && ModConfig.levelCap >= 0 && totalRepairCost >= ModConfig.levelCap) {
+                totalRepairCost = ModConfig.levelCap - 1;
+            }
+
+            if (ModConfig.levelCap >= 0 && totalRepairCost >= ModConfig.levelCap)
             {
                 outputItem = ItemStack.EMPTY;
             }
 
             if (!outputItem.isEmpty()) {
+                if (shouldIncreaseCost) {
+                    int newCost = outputItem.getRepairCost();
+                    if (!right.isEmpty() && newCost < right.getRepairCost()) {
+                        newCost = right.getRepairCost();
+                    }
+                    if (renameAddedCost != addedRepairCost || renameAddedCost == 0) {
+                        newCost = newCost * 2 + 1;
+                    }
+                    outputItem.setRepairCost(newCost);
+                }
                 EnchantmentHelper.setEnchantments(outputItemEnchantments, outputItem);
+                if (outputItem.isItemStackDamageable() && outputItem.getItem().getIsRepairable(left, right)) {
+                    event.setMaterialCost(materialCost);
+                }
                 event.setCost(addedRepairCost);
                 event.setOutput(outputItem);
             }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
+        if (event.getModID().equals(AnvilPatch.MODID)) {
+            ConfigManager.sync(AnvilPatch.MODID, Config.Type.INSTANCE);
         }
     }
 
