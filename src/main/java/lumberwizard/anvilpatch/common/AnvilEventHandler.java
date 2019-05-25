@@ -22,7 +22,6 @@ public class AnvilEventHandler {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void anvilUpdate(AnvilUpdateEvent event) {
         if (!event.getOutput().isEmpty()) return;
-        AnvilPatch.logger.info("Anvil event fired for side " + FMLCommonHandler.instance().getEffectiveSide());
         ItemStack left = event.getLeft();
         ItemStack right = event.getRight();
         ItemStack outputItem = left.copy();

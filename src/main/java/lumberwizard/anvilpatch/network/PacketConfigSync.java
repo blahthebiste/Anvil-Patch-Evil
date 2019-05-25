@@ -1,6 +1,7 @@
 package lumberwizard.anvilpatch.network;
 
 import io.netty.buffer.ByteBuf;
+import lumberwizard.anvilpatch.AnvilPatch;
 import lumberwizard.anvilpatch.ModConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
@@ -37,6 +38,7 @@ public class PacketConfigSync implements IMessage {
                 ModConfig.valuesOverriden = true;
                 ModConfig.syncedCostIncreaseSetting = message.costIncreaseSetting;
                 ModConfig.syncedLevelCap = message.levelCap;
+                AnvilPatch.logger.info("Synced configs from server");
             });
             return null;
         }
