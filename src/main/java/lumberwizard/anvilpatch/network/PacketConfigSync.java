@@ -35,7 +35,7 @@ public class PacketConfigSync implements IMessage {
         @Override
         public IMessage onMessage(PacketConfigSync message, MessageContext ctx) {
             Minecraft.getMinecraft().addScheduledTask(() -> {
-                ModConfig.valuesOverriden = true;
+                ModConfig.valuesOverridden = true;
                 ModConfig.syncedCostIncreaseSetting = message.costIncreaseSetting;
                 ModConfig.syncedLevelCap = message.levelCap;
                 AnvilPatch.logger.info("Synced configs from server");

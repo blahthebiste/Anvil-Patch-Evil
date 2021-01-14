@@ -7,7 +7,7 @@ import net.minecraftforge.fml.common.Loader;
 public class ModConfig {
 
     @Config.Ignore
-    public static boolean valuesOverriden = false;
+    public static boolean valuesOverridden = false;
 
     @Config.Comment({"Set to -1 to remove the cap.", "This setting will be ignored if Apotheosis is installed."})
     @Config.Name("New level cap")
@@ -21,7 +21,7 @@ public class ModConfig {
         if (Loader.isModLoaded("apotheosis")) {
             return -1;
         }
-        if (valuesOverriden) {
+        if (valuesOverridden) {
             return syncedLevelCap;
         }
         return levelCap;
@@ -31,7 +31,7 @@ public class ModConfig {
             "Valid values:",
             "KEEP - keeps the cumulative repair cost, same as vanilla",
             "REMOVE_REPAIR_SCALING - repairs won't increase the xp cost, but enchantments will, even for repaired items",
-            "ENCHANTMENT - repairs will always cost the same, but applying more enchantments will cost more",
+            "ENCHANTMENT_ONLY - repairs will always cost the same, but applying more enchantments will cost more",
             "REMOVE - removes the cumulative repair cost entirely"
     })
     @Config.Name("XP cost increase")
@@ -41,7 +41,7 @@ public class ModConfig {
     public static EnumCostIncreaseSetting syncedCostIncreaseSetting;
 
     public static EnumCostIncreaseSetting getCostIncreaseSetting(){
-        if (valuesOverriden) {
+        if (valuesOverridden) {
             return syncedCostIncreaseSetting;
         }
         return costIncreaseSetting;

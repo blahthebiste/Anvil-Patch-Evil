@@ -57,7 +57,7 @@ public class AnvilPatch
     @SubscribeEvent
     public static void onPlayerDisconnected(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.player.world.isRemote) {
-            ModConfig.valuesOverriden = false;
+            ModConfig.valuesOverridden = false;
         }
     }
 

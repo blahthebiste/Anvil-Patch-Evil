@@ -8,7 +8,6 @@ import net.minecraft.init.Items;
 import net.minecraft.item.ItemEnchantedBook;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.event.AnvilUpdateEvent;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -43,6 +42,7 @@ public class AnvilEventHandler {
                 return;
             }
 
+            shouldApplyIncreasedCost = shouldApplyIncreasedCost && ModConfig.getCostIncreaseSetting() != ModConfig.EnumCostIncreaseSetting.ENCHANTMENT_ONLY;
 
             for (materialCost = 0; amountRepairedByMat > 0 && materialCost < right.getCount(); ++materialCost)
             {
@@ -81,8 +81,8 @@ public class AnvilEventHandler {
 
             for (Enchantment enchantmentToAdd : enchantmentsToApply.keySet()) {
                 if (enchantmentToAdd != null) {
-                    int currentEnchantmentLevel = outputItemEnchantments.containsKey(enchantmentToAdd) ? (outputItemEnchantments.get(enchantmentToAdd)).intValue() : 0;
-                    int enchantmentNewLevel = (enchantmentsToApply.get(enchantmentToAdd)).intValue();
+                    int currentEnchantmentLevel = outputItemEnchantments.getOrDefault(enchantmentToAdd, 0);
+                    int enchantmentNewLevel = enchantmentsToApply.get(enchantmentToAdd);
                     enchantmentNewLevel = currentEnchantmentLevel == enchantmentNewLevel ? enchantmentNewLevel + 1 : Math.max(enchantmentNewLevel, currentEnchantmentLevel);
                     boolean canEnchantmentBeAppliedToLeftItem = enchantmentToAdd.canApply(left);
 
@@ -107,7 +107,7 @@ public class AnvilEventHandler {
                             enchantmentNewLevel = enchantmentToAdd.getMaxLevel();
                         }
 
-                        outputItemEnchantments.put(enchantmentToAdd, Integer.valueOf(enchantmentNewLevel));
+                        outputItemEnchantments.put(enchantmentToAdd, enchantmentNewLevel);
                         int repairCostAddedByEnchantmentRarity = 0;
 
                         switch (enchantmentToAdd.getRarity()) {
