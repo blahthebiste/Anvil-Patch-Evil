@@ -50,14 +50,16 @@ public class AnvilPatch
     @SubscribeEvent
     public static void onPlayerConnected(PlayerEvent.PlayerLoggedInEvent event) {
         if(!event.player.world.isRemote && event.player instanceof EntityPlayerMP) {
-            ModNetworkHandler.INSTANCE.sendTo(new PacketConfigSync(ModConfig.levelCap, ModConfig.costIncreaseSetting), (EntityPlayerMP) event.player);
+            ModNetworkHandler.INSTANCE.sendTo(
+                    new PacketConfigSync(ModConfig.levelCap, ModConfig.costIncreaseSetting, ModConfig.breakChance),
+                    (EntityPlayerMP) event.player);
         }
     }
 
     @SubscribeEvent
     public static void onPlayerDisconnected(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.player.world.isRemote) {
-            ModConfig.valuesOverridden = false;
+            ModConfig.setValuesOverridden(false);
         }
     }
 

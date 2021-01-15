@@ -14,30 +14,33 @@ public class PacketConfigSync implements IMessage {
 
     private int levelCap;
     private ModConfig.EnumCostIncreaseSetting costIncreaseSetting;
-    public PacketConfigSync(int levelCap, ModConfig.EnumCostIncreaseSetting costIncreaseSetting) {
+    private float breakChance;
+    public PacketConfigSync(int levelCap, ModConfig.EnumCostIncreaseSetting costIncreaseSetting, float breakChance) {
         this.levelCap = levelCap;
         this.costIncreaseSetting = costIncreaseSetting;
+        this.breakChance = breakChance;
     }
 
     @Override
     public void fromBytes(ByteBuf buf) {
         levelCap = buf.readInt();
         costIncreaseSetting = ModConfig.EnumCostIncreaseSetting.values()[buf.readInt()];
+        breakChance = buf.readFloat();
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
         buf.writeInt(levelCap);
         buf.writeInt(costIncreaseSetting.ordinal());
+        buf.writeFloat(breakChance);
     }
 
     public static class Handler implements IMessageHandler<PacketConfigSync, IMessage> {
         @Override
         public IMessage onMessage(PacketConfigSync message, MessageContext ctx) {
             Minecraft.getMinecraft().addScheduledTask(() -> {
-                ModConfig.valuesOverridden = true;
-                ModConfig.syncedCostIncreaseSetting = message.costIncreaseSetting;
-                ModConfig.syncedLevelCap = message.levelCap;
+                ModConfig.setValuesOverridden(true);
+                ModConfig.setSyncedValues(message.levelCap, message.costIncreaseSetting, message.breakChance);
                 AnvilPatch.logger.info("Synced configs from server");
             });
             return null;

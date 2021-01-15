@@ -8,6 +8,7 @@ import net.minecraft.init.Items;
 import net.minecraft.item.ItemEnchantedBook;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.event.AnvilUpdateEvent;
+import net.minecraftforge.event.entity.player.AnvilRepairEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -19,7 +20,7 @@ import java.util.Map;
 public class AnvilEventHandler {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    public static void anvilUpdate(AnvilUpdateEvent event) {
+    public static void onAnvilUpdate(AnvilUpdateEvent event) {
         if (!event.getOutput().isEmpty()) return;
         ItemStack left = event.getLeft();
         ItemStack right = event.getRight();
@@ -33,27 +34,23 @@ public class AnvilEventHandler {
         boolean shouldApplyIncreasedCost = ModConfig.getCostIncreaseSetting() != ModConfig.EnumCostIncreaseSetting.REMOVE;
 
         int materialCost = 1;
-        if (outputItem.isItemStackDamageable() && outputItem.getItem().getIsRepairable(left, right))
-        {
+        if (outputItem.isItemStackDamageable() && outputItem.getItem().getIsRepairable(left, right)) {
             int amountRepairedByMat = Math.min(outputItem.getItemDamage(), outputItem.getMaxDamage() / 4);
 
-            if (amountRepairedByMat <= 0)
-            {
+            if (amountRepairedByMat <= 0) {
                 return;
             }
 
             shouldApplyIncreasedCost = shouldApplyIncreasedCost && ModConfig.getCostIncreaseSetting() != ModConfig.EnumCostIncreaseSetting.ENCHANTMENT_ONLY;
 
-            for (materialCost = 0; amountRepairedByMat > 0 && materialCost < right.getCount(); ++materialCost)
-            {
+            for (materialCost = 0; amountRepairedByMat > 0 && materialCost < right.getCount(); ++materialCost) {
                 int newDamage = outputItem.getItemDamage() - amountRepairedByMat;
                 outputItem.setItemDamage(newDamage);
                 ++addedRepairCost;
                 amountRepairedByMat = Math.min(outputItem.getItemDamage(), outputItem.getMaxDamage() / 4);
             }
 
-        }
-        else {
+        } else {
             if (!isRightItemEnchantedBook && (outputItem.getItem() != right.getItem() || !outputItem.isItemStackDamageable())) {
                 return;
             }
@@ -145,66 +142,64 @@ public class AnvilEventHandler {
             shouldApplyIncreasedCost = shouldApplyIncreasedCost && (rightItemHasCompatibleEnchantments || ModConfig.getCostIncreaseSetting() != ModConfig.EnumCostIncreaseSetting.ENCHANTMENT_ONLY);
         }
 
-            int renameAddedCost = 0;
+        int renameAddedCost = 0;
 
-            String repairedItemName = event.getName();
+        String repairedItemName = event.getName();
 
-            if (StringUtils.isBlank(repairedItemName))
-            {
-                if (left.hasDisplayName())
-                {
-                    renameAddedCost = 1;
-                    addedRepairCost += renameAddedCost;
-                    outputItem.clearCustomName();
-                }
-            }
-
-
-            else if (!repairedItemName.equals(left.getDisplayName()))
-            {
+        if (StringUtils.isBlank(repairedItemName)) {
+            if (left.hasDisplayName()) {
                 renameAddedCost = 1;
                 addedRepairCost += renameAddedCost;
-                outputItem.setStackDisplayName(repairedItemName);
+                outputItem.clearCustomName();
             }
-            if (isRightItemEnchantedBook && !outputItem.getItem().isBookEnchantable(outputItem, right)) outputItem = ItemStack.EMPTY;
+        } else if (!repairedItemName.equals(left.getDisplayName())) {
+            renameAddedCost = 1;
+            addedRepairCost += renameAddedCost;
+            outputItem.setStackDisplayName(repairedItemName);
+        }
+        if (isRightItemEnchantedBook && !outputItem.getItem().isBookEnchantable(outputItem, right))
+            outputItem = ItemStack.EMPTY;
 
-            int totalRepairCost = (shouldApplyIncreasedCost ? event.getCost() : 0) + addedRepairCost;
+        int totalRepairCost = (shouldApplyIncreasedCost ? event.getCost() : 0) + addedRepairCost;
 
-            if (totalRepairCost <= 0)
-            {
-                outputItem = ItemStack.EMPTY;
+        if (totalRepairCost <= 0) {
+            outputItem = ItemStack.EMPTY;
+        }
+
+        if (addedRepairCost == renameAddedCost && ModConfig.getLevelCap() >= 0 && totalRepairCost >= ModConfig.getLevelCap()) {
+            totalRepairCost = ModConfig.getLevelCap() - 1;
+        }
+
+        if (ModConfig.getLevelCap() >= 0 && totalRepairCost >= ModConfig.getLevelCap()) {
+            if (event.getOutput().isEmpty()) {
+                event.setCanceled(true);
             }
+            return;
+        }
 
-            if (addedRepairCost == renameAddedCost && ModConfig.getLevelCap() >= 0 && totalRepairCost >= ModConfig.getLevelCap()) {
-                totalRepairCost = ModConfig.getLevelCap() - 1;
-            }
-
-            if (ModConfig.getLevelCap() >= 0 && totalRepairCost >= ModConfig.getLevelCap())
-            {
-                if (event.getOutput().isEmpty()) {
-                    event.setCanceled(true);
+        if (!outputItem.isEmpty()) {
+            if (shouldIncreaseCost) {
+                int newCost = outputItem.getRepairCost();
+                if (!right.isEmpty() && newCost < right.getRepairCost()) {
+                    newCost = right.getRepairCost();
                 }
-                return;
+                if (renameAddedCost != addedRepairCost || renameAddedCost == 0) {
+                    newCost = newCost * 2 + 1;
+                }
+                outputItem.setRepairCost(newCost);
             }
+            EnchantmentHelper.setEnchantments(outputItemEnchantments, outputItem);
+            if (outputItem.isItemStackDamageable() && outputItem.getItem().getIsRepairable(left, right)) {
+                event.setMaterialCost(materialCost);
+            }
+            event.setCost(totalRepairCost);
+            event.setOutput(outputItem);
+        }
+    }
 
-            if (!outputItem.isEmpty()) {
-                if (shouldIncreaseCost) {
-                    int newCost = outputItem.getRepairCost();
-                    if (!right.isEmpty() && newCost < right.getRepairCost()) {
-                        newCost = right.getRepairCost();
-                    }
-                    if (renameAddedCost != addedRepairCost || renameAddedCost == 0) {
-                        newCost = newCost * 2 + 1;
-                    }
-                    outputItem.setRepairCost(newCost);
-                }
-                EnchantmentHelper.setEnchantments(outputItemEnchantments, outputItem);
-                if (outputItem.isItemStackDamageable() && outputItem.getItem().getIsRepairable(left, right)) {
-                    event.setMaterialCost(materialCost);
-                }
-                event.setCost(totalRepairCost);
-                event.setOutput(outputItem);
-            }
+    @SubscribeEvent
+    public static void onAnvilRepair(AnvilRepairEvent event) {
+        event.setBreakChance(ModConfig.getBreakChance());
     }
 
 }
