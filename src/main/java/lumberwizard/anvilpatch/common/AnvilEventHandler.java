@@ -100,7 +100,7 @@ public class AnvilEventHandler {
                     } else {
                         rightItemHasCompatibleEnchantments = true;
 
-                        if (enchantmentNewLevel > enchantmentToAdd.getMaxLevel()) {
+                        if (enchantmentNewLevel > enchantmentToAdd.getMaxLevel() && !ModConfig.shouldBreakEnchantLevelCap()) {
                             enchantmentNewLevel = enchantmentToAdd.getMaxLevel();
                         }
 

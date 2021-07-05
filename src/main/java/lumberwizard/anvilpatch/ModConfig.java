@@ -6,9 +6,10 @@ import net.minecraftforge.fml.common.Loader;
 @Config(modid = AnvilPatch.MODID)
 public class ModConfig {
 
-    public static void setSyncedValues(int levelCap, EnumCostIncreaseSetting costIncreaseSetting, float breakChance){
+    public static void setSyncedValues(int levelCap, EnumCostIncreaseSetting costIncreaseSetting, boolean breakEnchantLevelCap, float breakChance){
         syncedLevelCap = levelCap;
         syncedCostIncreaseSetting = costIncreaseSetting;
+        syncedBreakEnchantLevelCap = breakEnchantLevelCap;
         syncedBreakChance = breakChance;
     }
 
@@ -53,19 +54,24 @@ public class ModConfig {
         return costIncreaseSetting;
     }
 
-    public static boolean areValuesOverridden() {
-        return valuesOverridden;
-    }
+    @Config.Comment({
+            "Vanilla behavior, when merging two items where the one on the right has an enchantment with a level beyond its max",
+            "(for example power 8) is to reset the level to the max (so the resulting item would have power 5)",
+            "This setting disables that.",
+            "It does not, however, allow creating enchantments beyond the cap",
+            "So, for example, merging two power V books would still result in power V"
+    })
+    @Config.Name(("Allow repairs beyond enchantment level cap."))
+    public static boolean breakEnchantLevelCap = false;
 
-    public static void setValuesOverridden(boolean valuesOverridden) {
-        ModConfig.valuesOverridden = valuesOverridden;
-    }
+    @Config.Ignore
+    private static boolean syncedBreakEnchantLevelCap;
 
-    public enum EnumCostIncreaseSetting {
-        KEEP,
-        REMOVE_REPAIR_SCALING,
-        ENCHANTMENT_ONLY,
-        REMOVE
+    public static boolean shouldBreakEnchantLevelCap() {
+        if (areValuesOverridden()) {
+            return syncedBreakEnchantLevelCap;
+        }
+        return breakEnchantLevelCap;
     }
 
     @Config.Comment({"Chance for the anvil to reach the next stage of breakage per use.",
@@ -82,6 +88,21 @@ public class ModConfig {
             return syncedBreakChance;
         }
         return breakChance;
+    }
+
+    public static boolean areValuesOverridden() {
+        return valuesOverridden;
+    }
+
+    public static void setValuesOverridden(boolean valuesOverridden) {
+        ModConfig.valuesOverridden = valuesOverridden;
+    }
+
+    public enum EnumCostIncreaseSetting {
+        KEEP,
+        REMOVE_REPAIR_SCALING,
+        ENCHANTMENT_ONLY,
+        REMOVE
     }
 
 }
