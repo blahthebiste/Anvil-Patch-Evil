@@ -80,7 +80,8 @@ public class AnvilEventHandler {
                 if (enchantmentToAdd != null) {
                     int currentEnchantmentLevel = outputItemEnchantments.getOrDefault(enchantmentToAdd, 0);
                     int enchantmentNewLevel = enchantmentsToApply.get(enchantmentToAdd);
-                    enchantmentNewLevel = currentEnchantmentLevel == enchantmentNewLevel ? enchantmentNewLevel + 1 : Math.max(enchantmentNewLevel, currentEnchantmentLevel);
+                    if (enchantmentNewLevel == currentEnchantmentLevel && enchantmentNewLevel < enchantmentToAdd.getMaxLevel()) enchantmentNewLevel++;
+                    enchantmentNewLevel = Math.max(enchantmentNewLevel, currentEnchantmentLevel);
                     boolean canEnchantmentBeAppliedToLeftItem = enchantmentToAdd.canApply(left);
 
                     if (left.getItem() == Items.ENCHANTED_BOOK) // supposed to also apply to players in creative mode but I guess it's not possible
