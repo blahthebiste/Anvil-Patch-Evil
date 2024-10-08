@@ -1,0 +1,17 @@
+{
+    "compatibilityLevel": "JAVA_8",
+    "package": "com.lumberjacksparrow.anvilpatchevil.mixin",
+    "refmap": "refmap.anvilpatchevil.json",
+    "mixins": [
+        "ContainerRepairMixin",
+        "GuiRepairMixin"
+    ],
+    "client": [
+        "ContainerRepairMixin",
+        "GuiRepairMixin"
+    ],
+    "server": [
+        "ContainerRepairMixin",
+        "GuiRepairMixin"
+    ]
+}
